@@ -1,4 +1,5 @@
-import mongoose, { Schema, model } from "mongoose";
+import mongoose, { Schema, model } from 'mongoose';
+
 const userSchema = new Schema({
     userName: {
         type: String,
@@ -6,7 +7,7 @@ const userSchema = new Schema({
         required: true,
         lowercase: true,
         trim: true,
-        index: true,
+        index: true,  // Index for fast lookup
     },
     email: {
         type: String,
@@ -14,7 +15,7 @@ const userSchema = new Schema({
         required: true,
         lowercase: true,
         trim: true,
-        match: [/\S+@\S+\.\S+/, 'Please provide a valid email address'], // Email validation regex
+        match: [/\S+@\S+\.\S+/, 'Please provide a valid email address'], // Email validation
     },
     firstName: {
         type: String,
@@ -26,83 +27,40 @@ const userSchema = new Schema({
         required: true,
         trim: true,
     },
-    avatar: {
-        type: String,
-        required: true,
-    },
     password: {
         type: String,
-        required: [true, "Password is required"],
-        minlength: 6, // Minimum length for password
+        required: true,
+        minlength: [6, 'Password should be at least 6 characters long'], // Password validation
     },
     role: {
         type: String,
-        enum: ["customer", "agent", "admin", "support"],
-        default: "customer",
+        enum: ['user', 'admin', 'support'],  // User roles (e.g., user, admin, or support staff)
+        default: 'user',
+    },
+    avatar: {
+        type: String,
+        required: false,  // Optional avatar URL (can be used to store the user's profile picture)
     },
     refreshToken: {
-        type: String
-    },
-    accountStatus: { // Tracking the account status (active, suspended, etc.)
         type: String,
-        enum: ['active', 'suspended', 'deactivated', 'pending'],
-        default: 'active',
+        required: false,  // Used to store refresh tokens for session management
     },
-    lastLogin: { // Store the timestamp for the last login
-        type: Date,
-        default: null,
-    },
-    failedLoginAttempts: { // Count failed login attempts (can be used for lockout mechanisms)
-        type: Number,
-        default: 0,
-    },
-    lastPasswordChange: { // Track the last password change date for security purposes
-        type: Date,
-        default: null,
-    },
-    twoFactorEnabled: { // Boolean flag for 2FA
+    isActive: {
         type: Boolean,
-        default: false,
+        default: true,  // To indicate if the user is active
     },
-    assignedTickets: [{ // Array of ticket IDs assigned to the user
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Ticket',
-    }],
-    ticketHistory: [{ // History of tickets created by or for the user
-        ticketId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Ticket',
-        },
-        action: { // Action taken on the ticket (e.g., created, updated, resolved)
-            type: String,
-            enum: ['created', 'assigned', 'updated', 'resolved', 'closed'],
-            required: true,
-        },
-        timestamp: { // Timestamp of when the action took place
-            type: Date,
-            default: Date.now,
-        },
-    }],
+    lastLogin: {
+        type: Date,
+        required: false,  // Tracks the last login timestamp
+    },
 }, {
-    timestamps: true
+    timestamps: true,  // Automatically adds `createdAt` and `updatedAt`
 });
 
-// // Middleware to hash the password before saving the user document
-// userSchema.pre('save', async function (next) {
-//     if (!this.isModified('password')) return next(); // Skip if password is not modified
-//     try {
-//         this.password = await bcrypt.hash(this.password, 10); // Hash the password with 10 salt rounds
-//         next();
-//     } catch (err) {
-//         next(err);
-//     }
-// });
+// Middleware to update the `updatedAt` field whenever the document is modified
+userSchema.pre('save', function (next) {
+    this.updatedAt = Date.now();
+    next();
+});
 
-// // Method to compare input password with stored hash
-// userSchema.methods.comparePassword = async function (candidatePassword) {
-//     return await bcrypt.compare(candidatePassword, this.password);
-// };
-
-
-
-export const User = model("User", userSchema);
+export const User = model('User', userSchema);
