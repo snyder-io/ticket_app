@@ -1,22 +1,27 @@
 import asyncHandler from "../utils/asyncHandler.js";
 import apiError from "../utils/apiError.js";
-import User from "../models/user.model.js";
+import { User } from "../models/user.model.js";
 import apiResponse from "../utils/apiResponse.js";
 
 export const registerUser = asyncHandler(async (req, res) => {
-    // Get user data from request body
-    // Validation - not empty
-    // Check if user already exists: username, email
-    //Create user object - create entry in database
-    // Remove password and refresh token from response
-    // Check for user creation
-    //return response
-    const { userName, email, firstName, lastName, password, } = req.body;
+    const { userName, email, firstName, middleName, lastName, password, } = req.body;
 
-    if (!userName || !email || !firstName || !lastName || !password) {
-        throw new apiError(400, "All fields are required");
+    if (!userName) {
+        throw new apiError(400, "Username is required")
     }
-    const existedUser = User.findOne({
+    if (!email) {
+        throw new apiError(400, "Email is required")
+    }
+    if (!firstName) {
+        throw new apiError(400, "First name is required")
+    }
+    if (!lastName) {
+        throw new apiError(400, "Last name is required")
+    }
+    if (!password) {
+        throw new apiError(400, "Password is required")
+    }
+    const existedUser = await User.findOne({
         $or: [
             { userName },
             { email }
@@ -29,6 +34,7 @@ export const registerUser = asyncHandler(async (req, res) => {
         userName: userName.toLowerCase(),
         email,
         firstName,
+        middleName,
         lastName,
         password
     })

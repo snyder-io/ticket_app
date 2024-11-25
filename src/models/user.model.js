@@ -24,6 +24,12 @@ const userSchema = new Schema({
         required: true,
         trim: true,
     },
+    middleName: {
+        type: String,
+        default: "",
+        trim: true,
+    },
+
     lastName: {
         type: String,
         required: true,
@@ -57,6 +63,7 @@ const userSchema = new Schema({
     },
 }, {
     timestamps: true,  // Automatically adds `createdAt` and `updatedAt`
+    versionKey: false,
 });
 
 // Middleware to update the `updatedAt` field whenever the document is modified
@@ -99,4 +106,4 @@ userSchema.methods.generateRefreshToken = function () {
 }
 
 
-export default User = model('User', userSchema);
+export const  User = model('User', userSchema);
